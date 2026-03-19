@@ -94,3 +94,27 @@ with tab2:
         st.divider()
         st.balloons()
         st.write(f"### {user_name}님의 최종 점수: {score} / {len(questions)}")
+
+
+# 기존 코드의 제출 부분에 아래 내용을 추가/수정합니다.
+
+if submitted:
+    score = sum(1 for i, q in enumerate(questions) if user_answers[i] == q['answer'])
+    
+    st.divider()
+    st.balloons()
+    
+    # 결과 요약 텍스트 생성
+    result_text = f"--- 퀴즈 결과 리포트 ---\n"
+    result_text += f"이름: {user_name}\n"
+    result_text += f"점수: {score} / {len(questions)}\n"
+    result_text += f"일시: {time.strftime('%Y-%m-%d %H:%M:%S')}\n"
+    result_text += "------------------------"
+
+    st.subheader(f"📊 {user_name}님의 최종 성적표")
+    st.code(result_text) # 학생들이 복사하기 쉽게 코드로 보여줌
+    
+    st.info("위 내용을 복사해서 선생님(운영자)에게 제출해주세요!")
+    
+    # 버튼 하나로 클립보드에 복사하는 기능 (일부 브라우저에서 작동)
+    st.button("📋 결과 복사하기", on_click=lambda: st.write("클립보드에 복사되었습니다! (직접 드래그 복사를 권장합니다)"))
