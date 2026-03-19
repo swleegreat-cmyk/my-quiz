@@ -1,73 +1,96 @@
 import streamlit as st
+import pandas as pd
+import numpy as np
+import time
 
-# 페이지 제목 설정
-st.set_page_config(page_title="Big-Seed 마케팅 마스터", page_icon="📝")
+# 페이지 설정
+st.set_page_config(page_title="Marketing Sim & Quiz", page_icon="📊", layout="wide")
 
-def main():
-    st.title("📊 빅 시드 마케팅 7단계 퀴즈")
-    st.write("지문의 핵심 내용을 7개의 문제로 완벽히 정복해보세요!")
+# 사이드바: 사용자 정보 입력
+with st.sidebar:
+    st.header("👤 사용자 등록")
+    user_name = st.text_input("이름을 입력하세요:", "마케팅 초보")
+    st.write(f"반갑습니다, **{user_name}**님!")
     st.divider()
+    st.info("💡 팁: 재생산 지수(R)가 1보다 커야 전염병처럼 번집니다.")
 
-    # 7개의 문제 데이터
+# 메인 탭 구성 (시뮬레이터와 퀴즈 분리)
+tab1, tab2 = st.tabs(["📈 성장 시뮬레이터", "✍️ 마케팅 퀴즈"])
+
+# --- 탭 1: 성장 시뮬레이터 (추가된 기능) ---
+with tab1:
+    st.header("바이럴 확산 시뮬레이터")
+    st.write("지문에서 언급된 '시드 크기'와 'R'의 위력을 직접 확인해 보세요.")
+    
+    col1, col2 = st.columns([1, 2])
+    
+    with col1:
+        seed_size = st.number_input("초기 시드(Seed) 크기:", min_value=1, value=100)
+        r_value = st.slider("재생산 지수 (R):", 0.0, 3.0, 1.2, 0.1)
+        steps = st.slider("확산 단계 (Generation):", 1, 10, 5)
+    
+    # 계산 로직
+    generations = np.arange(steps + 1)
+    counts = [seed_size * (r_value ** n) for n in generations]
+    df = pd.DataFrame({"단계": generations, "전파 인원": counts})
+    
+    with col2:
+        st.line_chart(df.set_index("단계"))
+        final_count = int(counts[-1])
+        st.metric("최종 확산 인원", f"{final_count:,} 명", delta=f"{final_count - seed_size} 명 증가")
+
+# --- 탭 2: 마케팅 퀴즈 (기능 강화) ---
+with tab2:
+    st.header(f"{user_name}님의 마케팅 실력 점검")
+    
     questions = [
         {
-            "q": "1. 바이럴 마케팅은 메시지를 전파하는 '이것'을 가진 개인들로부터 시작됩니다. 무엇일까요?",
-            "options": ["백신(Vaccine)", "시드(Seed)", "엔진(Engine)", "타겟(Target)"],
-            "answer": "시드(Seed)"
+            "q": "바이럴 마케팅에서 '기하급수적 성장'의 조건은?",
+            "options": ["R < 1", "R = 1", "R > 1"],
+            "answer": "R > 1",
+            "why": "한 사람이 평균 1명보다 많이 퍼뜨려야 숫자가 계속 불어납니다."
         },
         {
-            "q": "2. 한 사람이 평균적으로 감염시키는 새 인원수를 뜻하는 용어는?",
-            "options": ["성장률(G)", "전파력(P)", "재생산 지수(R)", "확산 속도(S)"],
-            "answer": "재생산 지수(R)"
+            "q": "빅 시드 마케팅이 통제하는 핵심 변수는?",
+            "options": ["운(Luck)", "유명인 섭외", "초기 시드 크기"],
+            "answer": "초기 시드 크기",
+            "why": "기업은 질병과 달리 초기 전파자의 숫자를 자본과 매체로 조절할 수 있습니다."
         },
         {
-            "q": "3. 메시지가 기하급수적으로 성장(에피데믹)하려면 R의 값은 어떠해야 하나요?",
-            "options": ["R < 0", "R < 1", "R = 1", "R > 1"],
-            "answer": "R > 1"
-        },
-        {
-            "q": "4. 지문에 따르면, 기업이나 정치 캠페인이 질병과 달리 직접 '조절'할 수 있는 것은?",
-            "options": ["감염 속도", "시드(Seed)의 크기", "개인의 면역력", "바이러스의 종류"],
-            "answer": "시드(Seed)의 크기"
-        },
-        {
-            "q": "5. '빅 시드 마케팅'은 바이럴 마케팅의 힘과 무엇의 힘을 결합한 것인가요?",
-            "options": ["SNS 광고", "전통 매체(Traditional media)", "입소문", "1대1 대면 마케팅"],
-            "answer": "전통 매체(Traditional media)"
-        },
-        {
-            "q": "6. 빅 시드 마케팅이 의존하지 않는 '두 가지' 요소로 언급된 것은?",
-            "options": ["데이터와 분석", "운(Luck)과 유명인 지지", "자본과 기술", "시간과 노력"],
-            "answer": "운(Luck)과 유명인 지지"
-        },
-        {
-            "q": "7. 빅 시드 마케팅은 결국 누구의 힘을 활용하는 방식인가요?",
-            "options": ["소수의 엘리트", "수많은 보통 사람들", "영향력 있는 유튜버", "전문 마케터 집단"],
-            "answer": "수많은 보통 사람들"
+            "q": "빅 시드 마케팅은 누구의 힘을 활용하나요?",
+            "options": ["소수 엘리트", "보통 사람들", "전문 마케터"],
+            "answer": "보통 사람들",
+            "why": "수많은 보통 사람들의 작은 전파력이 모여 큰 폭발을 만듭니다."
         }
     ]
 
-    # 퀴즈 시작
-    with st.form("marketing_quiz"):
+    with st.form("quiz_advanced"):
         user_answers = []
         for i, item in enumerate(questions):
-            st.markdown(f"#### {item['q']}")
-            ans = st.radio("정답을 선택하세요:", item['options'], key=f"ans_{i}")
+            st.markdown(f"**Q{i+1}. {item['q']}**")
+            ans = st.radio("선택:", item['options'], key=f"adv_{i}")
             user_answers.append(ans)
-            st.write("") # 간격 띄우기
-
-        submitted = st.form_submit_button("결과 확인하기")
+            st.write("")
+        
+        submitted = st.form_submit_button("제출 및 해설 보기")
 
     if submitted:
-        score = sum(1 for i, q in enumerate(questions) if user_answers[i] == q['answer'])
+        score = 0
+        st.subheader("🧐 채점 결과 및 해설")
         
-        if score == 7:
-            st.balloons()
-            st.success(f"7/7 만점입니다! 당신은 마케팅 전문가군요! 🏆")
-        elif score >= 5:
-            st.info(f"잘하셨습니다! {score}/7점을 맞히셨습니다. 👍")
-        else:
-            st.warning(f"조금 더 복습해볼까요? {score}/7점을 맞히셨습니다. 📖")
-
-if __name__ == "__main__":
-    main()
+        for i, item in enumerate(questions):
+            is_correct = user_answers[i] == item['answer']
+            if is_correct:
+                st.success(f"Q{i+1}: 정답입니다! ✅")
+                score += 1
+            else:
+                st.error(f"Q{i+1}: 오답입니다. (선택: {user_answers[i]}) ❌")
+            
+            # 해설 상자 추가
+            with st.expander("해설 보기"):
+                st.write(f"**정답: {item['answer']}**")
+                st.write(item['why'])
+        
+        st.divider()
+        st.balloons()
+        st.write(f"### {user_name}님의 최종 점수: {score} / {len(questions)}")
